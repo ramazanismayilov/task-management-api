@@ -18,8 +18,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Epic Games')
-    .setDescription('The Epic Games API description')
+    .setTitle('Task Management')
+    .setDescription('The Task Management API description')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
