@@ -2,12 +2,12 @@ import { AttachmentEntity } from "src/modules/attachments/entity/attachment.enti
 import { UserEntity } from "src/modules/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-@Entity('profile')
+@Entity('profiles')
 export class ProfileEntity {
     @PrimaryGeneratedColumn()
     id: number
 
-    @OneToOne(() => UserEntity, { onDelete: "CASCADE" })
+    @OneToOne(() => UserEntity, (user) => user.profile, { onDelete: "CASCADE" })
     @JoinColumn({ name: 'userId' })
     user: UserEntity;
 
@@ -17,13 +17,13 @@ export class ProfileEntity {
     @Column({ nullable: true })
     bio: string
 
-    @OneToOne(() => AttachmentEntity, { eager: true, nullable: true })
+    @OneToOne(() => AttachmentEntity, { eager: true, nullable: true, onDelete: "SET NULL" })
     @JoinColumn({ name: 'avatarId' })
     avatar: AttachmentEntity;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ select: false })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ select: false })
     updatedAt: Date;
 }
