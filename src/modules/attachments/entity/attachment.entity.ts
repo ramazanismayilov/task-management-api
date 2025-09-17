@@ -1,0 +1,20 @@
+import { Media } from 'src/common/enums/media.enum';
+import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('attachments')
+export class AttachmentEntity extends BaseEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @Column()
+    url: string;
+
+    @Column({ type: 'enum', enum: Media, default: Media.IMAGE })
+    type: Media;
+
+    @CreateDateColumn({ select: false })
+    createdAt: Date;
+
+    @UpdateDateColumn({ select: false })
+    updatedAt: Date;
+}
