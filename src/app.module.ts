@@ -10,24 +10,12 @@ import { ClsModule } from 'nestjs-cls';
 import { Request } from 'express';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          type: 'postgres',
-          url: config.get('DATABASE_URL'),
-          entities: [join(__dirname, '/entities/*.entity.{ts,js}')],
-          migrations: [join(__dirname, '/migrations/*.{ts,js}')],
-          logging: true,
-          synchronize: true,
-        };
-      },
-    }),
+    TypeOrmModule.forRoot(databaseConfig()),
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
