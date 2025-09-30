@@ -8,6 +8,7 @@ import { DatabaseModule } from './config/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClsModule } from './core/cls/cls.module';
 import { MailerModule } from './config/mailer/mailer.module';
+import { LoggerModule } from './core/logger/logger.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MailerModule } from './config/mailer/mailer.module';
     AuthModule,
     MailerModule,
     ClsModule,
+    LoggerModule
   ],
   controllers: [AppController],
   providers: [AppService],
