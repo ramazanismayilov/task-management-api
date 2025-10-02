@@ -8,6 +8,6 @@ export class AuthController {
 
     @Post('register')
     register(@Body() body: RegisterDto) {
-        this.authService.register(body)
+        return this.authService.register(body)
     }
 }

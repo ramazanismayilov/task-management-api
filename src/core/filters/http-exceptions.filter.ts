@@ -14,19 +14,27 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
         let status = HttpStatus.INTERNAL_SERVER_ERROR;
         let message = 'Something went wrong';
-        let success = false;
 
         if (exception instanceof HttpException) {
             status = exception.getStatus();
             const res = exception.getResponse() as any;
-            message = res?.message || exception.message;
-            success = false;
+
+            if (typeof res === 'string') {
+                message = res;
+            } else if (Array.isArray(res.message)) {
+                message = res.message.join(', ');
+            } else if (res?.message) {
+                message = res.message;
+            } else {
+                message = exception.message;
+            }
         }
 
-        this.logger.error(`Status: ${status} | Message: ${message}`);
+        this.logger.error(`${message}`);
 
         response.status(status).json({
-            success,
+            success: false,
+            statusCode: status,
             message,
         });
     }

@@ -10,13 +10,18 @@ import { ClsModule } from './core/cls/cls.module';
 import { MailerModule } from './config/mailer/mailer.module';
 import { LoggerModule } from './core/logger/logger.module';
 import { HttpExceptionFilter } from './core/filters/http-exceptions.filter';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development' }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development',
+    }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'public') }),
     DatabaseModule,
     AuthModule,
+    UsersModule,
     MailerModule,
     ClsModule,
     LoggerModule

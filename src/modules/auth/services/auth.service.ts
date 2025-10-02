@@ -4,12 +4,12 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { ClsService } from "nestjs-cls";
 import { RoleEntity } from "src/modules/roles/entities/role.entity";
 import { Repository } from "typeorm";
-import { RegisterDto } from "../dto/register.dto";
 import * as bcrypt from 'bcrypt';
 import { Role } from "src/common/enums/role.enum";
 import { generateOtpExpireDate, generateOtpNumber } from "src/common/utils/otp.utils";
 import { UserRepository } from "src/modules/users/repositories/users.repository";
 import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { RegisterDto } from "../dto/register.dto";
 
 
 @Injectable()
