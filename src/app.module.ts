@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ClsModule } from './core/cls/cls.module';
 import { MailerModule } from './config/mailer/mailer.module';
 import { LoggerModule } from './core/logger/logger.module';
+import { HttpExceptionFilter } from './core/filters/http-exceptions.filter';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { LoggerModule } from './core/logger/logger.module';
     LoggerModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, HttpExceptionFilter],
 })
 export class AppModule { }

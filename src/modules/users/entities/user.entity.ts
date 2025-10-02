@@ -16,10 +16,10 @@ export class UserEntity {
     @Column()
     password: string
 
-    @ManyToOne(() => RoleEntity, (role) => role.users, { onDelete: 'SET NULL' })
+    @ManyToOne(() => RoleEntity, (role) => role.users, { onDelete: 'SET NULL', eager: true })
     role: RoleEntity;
 
-    @OneToOne(() => ProfileEntity, (profile) => profile.user)
+    @OneToOne(() => ProfileEntity, (profile) => profile.user, { cascade: true })
     profile: ProfileEntity;
 
     @Column({ default: false })
