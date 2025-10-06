@@ -8,33 +8,30 @@ export class RoleSeeder {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
-  ) {}
+  ) { }
 
   async run(dataSource: DataSource) {
-    const roleRepo = dataSource.getRepository(RoleEntity);
+    const roleRepo = dataSource.getRepository(RoleEntity)
 
     const roles = [
-      Role.GUEST,
-      Role.ORG_ADMIN,
-      Role.PROJECT_MANAGER,
       Role.SUPER_ADMIN,
+      Role.ORGANIZATION_ADMIN,
       Role.TEAM_LEAD,
       Role.USER,
-      Role.WORKSPACE_ADMIN,
     ];
 
     for (const name of roles) {
-      const existsRole = await roleRepo.findOne({ where: { name } });
+      const existsRole = await roleRepo.findOne({ where: { name } })
 
       if (existsRole) {
-        this.logger.log(`Role "${name}" already exists (id: ${existsRole.id})`, RoleSeeder.name);
+        this.logger.log(`Role "${name}" already exists (id: ${existsRole.id})`, RoleSeeder.name)
       } else {
         const role = roleRepo.create({ name });
         await roleRepo.save(role);
-        this.logger.log(`Role "${name}" created successfully`, RoleSeeder.name);
+        this.logger.log(`Role "${name}" created successfully`, RoleSeeder.name)
       }
     }
 
-    this.logger.log('Role seeding completed', RoleSeeder.name);
+    this.logger.log('Role seeding completed', RoleSeeder.name)
   }
 }

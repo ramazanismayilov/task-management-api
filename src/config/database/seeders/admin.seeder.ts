@@ -10,7 +10,7 @@ export class AdminSeeder {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
-  ) {}
+  ) { }
 
   async run(dataSource: DataSource) {
     const roleRepo = dataSource.getRepository(RoleEntity);
