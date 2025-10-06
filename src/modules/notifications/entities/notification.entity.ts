@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { UserEntity } from "src/modules/users/entities/user.entity";
-import { NotificationType } from "src/common/enums/notification.enum";
+import { UserEntity } from "../../../modules/users/entities/user.entity";
+import { NotificationType } from "../../../common/enums/notification.enum";
 
 @Entity('notifications')
 export class NotificationEntity {

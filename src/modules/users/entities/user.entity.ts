@@ -1,8 +1,8 @@
-import { CommentEntity } from "src/modules/comments/entities/comment.entity";
-import { NotificationEntity } from "src/modules/notifications/entities/notification.entity";
-import { ProfileEntity } from "src/modules/profiles/entities/profile.entity";
-import { RoleEntity } from "src/modules/roles/entities/role.entity";
-import { TaskEntity } from "src/modules/tasks/entities/task.entity";
+import { CommentEntity } from "../../../modules/comments/entities/comment.entity";
+import { NotificationEntity } from "../../../modules/notifications/entities/notification.entity";
+import { ProfileEntity } from "../../../modules/profiles/entities/profile.entity";
+import { RoleEntity } from "../../../modules/roles/entities/role.entity";
+import { TaskEntity } from "../../../modules/tasks/entities/task.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users')

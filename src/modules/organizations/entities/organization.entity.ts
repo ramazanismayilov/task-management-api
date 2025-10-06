@@ -1,5 +1,5 @@
-import { AttachmentEntity } from "src/modules/attachments/entity/attachment.entity";
-import { WorkspaceEntity } from "src/modules/workspaces/entities/workspace.entity";
+import { AttachmentEntity } from "../../../modules/attachments/entity/attachment.entity";
+import { WorkspaceEntity } from "../../../modules/workspaces/entities/workspace.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('organizations')

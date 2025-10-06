@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
-import { getAZTime } from 'src/common/utils/az-time.utils';
+import { getAZTime } from '../../common/utils/az-time.utils';
 import * as winston from 'winston';
 
 @Module({

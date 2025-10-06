@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { BoardEntity } from "./board.entity";
-import { TaskEntity } from "src/modules/tasks/entities/task.entity";
+import { TaskEntity } from "../../../modules/tasks/entities/task.entity";
 
 @Entity('board_columns')
 export class BoardColumnEntity {

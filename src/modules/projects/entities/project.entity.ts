@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { WorkspaceEntity } from "src/modules/workspaces/entities/workspace.entity";
-import { BoardEntity } from "src/modules/boards/entities/board.entity";
+import { WorkspaceEntity } from "../../../modules/workspaces/entities/workspace.entity";
+import { BoardEntity } from "../../../modules/boards/entities/board.entity";
 
 @Entity('projects')
 export class ProjectEntity {

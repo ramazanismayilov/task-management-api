@@ -1,4 +1,4 @@
-import { ProjectEntity } from "src/modules/projects/entities/project.entity";
+import { ProjectEntity } from "../../../modules/projects/entities/project.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { BoardColumnEntity } from "./board-column.entity";
 

@@ -2,12 +2,12 @@ import { ConflictException, Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ClsService } from "nestjs-cls";
-import { RoleEntity } from "src/modules/roles/entities/role.entity";
+import { RoleEntity } from "../../../modules/roles/entities/role.entity";
 import { Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
-import { Role } from "src/common/enums/role.enum";
-import { generateOtpExpireDate, generateOtpNumber } from "src/common/utils/otp.utils";
-import { UserRepository } from "src/modules/users/repositories/users.repository";
+import { Role } from "../../../common/enums/role.enum";
+import { generateOtpExpireDate, generateOtpNumber } from "../../../common/utils/otp.utils";
+import { UserRepository } from "../../../modules/users/repositories/users.repository";
 import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import { RegisterDto } from "../dto/register.dto";
 
@@ -27,18 +27,17 @@ export class AuthService {
 
     async register(params: RegisterDto) {
         this.logger.log(`Register attempt for email: ${params.email}`);
+
         const existingUser = await this.userRepository.findUserByEmail(params.email);
         if (existingUser) {
-            this.logger.warn(`User already exists with email: ${params.email}`);
-            throw new ConflictException('User already exists');
+            throw new ConflictException(`User already exists with email: ${params.email}`);
         }
 
         const hashedPassword = await bcrypt.hash(params.password, 10);
 
         const userRole = await this.roleRepo.findOne({ where: { name: Role.USER } });
         if (!userRole) {
-            this.logger.error(`Role not found: ${Role.USER}`);
-            throw new ConflictException('Role not found');
+            throw new ConflictException(`Role not found: ${Role.USER}`);
         }
 
         const user = this.userRepository.createUser({
@@ -48,16 +47,17 @@ export class AuthService {
             isActive: false,
             otpCode: generateOtpNumber(),
             otpExpiredAt: generateOtpExpireDate(),
-            profile: {
-                fullName: params.fullName
-            } as any
+            profile: { fullName: params.fullName } as any,
         });
 
         await this.userRepository.saveUser(user);
 
         this.logger.log(`User created successfully (email: ${params.email}, id: ${user.id})`);
 
-        return { message: 'OTP sent to your email.' };
+        return {
+            success: true,
+            message: 'OTP sent to your email',
+        };
     }
 
     async firebase() { }

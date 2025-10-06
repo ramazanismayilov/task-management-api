@@ -1,7 +1,9 @@
+import { randomInt } from 'crypto';
+
 export function generateOtpNumber(): number {
-    return Math.floor(100000 + Math.random() * 900000)
+    return randomInt(100000, 999999);
 }
 
-export function generateOtpExpireDate(): Date {
-    return new Date(Date.now() + 10 * 60 * 1000)
+export function generateOtpExpireDate(minutes = 10): Date {
+    return new Date(Date.now() + minutes * 60 * 1000);
 }

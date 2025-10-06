@@ -1,10 +1,10 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { UserEntity } from "src/modules/users/entities/user.entity";
-import { BoardColumnEntity } from "src/modules/boards/entities/board-column.entity";
-import { BoardEntity } from "src/modules/boards/entities/board.entity";
-import { TaskPriority } from "src/common/enums/task-priority.enum";
-import { TaskStatus } from "src/common/enums/task-status.enum.";
-import { CommentEntity } from "src/modules/comments/entities/comment.entity";
+import { UserEntity } from "../../../modules/users/entities/user.entity";
+import { BoardColumnEntity } from "../../../modules/boards/entities/board-column.entity";
+import { BoardEntity } from "../../../modules/boards/entities/board.entity";
+import { TaskPriority } from "../../../common/enums/task-priority.enum";
+import { TaskStatus } from "../../../common/enums/task-status.enum.";
+import { CommentEntity } from "../../../modules/comments/entities/comment.entity";
 
 @Entity('tasks')
 export class TaskEntity {

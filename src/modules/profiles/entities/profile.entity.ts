@@ -1,5 +1,5 @@
-import { AttachmentEntity } from "src/modules/attachments/entity/attachment.entity";
-import { UserEntity } from "src/modules/users/entities/user.entity";
+import { AttachmentEntity } from "../../../modules/attachments/entity/attachment.entity";
+import { UserEntity } from "../../../modules/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('profiles')
