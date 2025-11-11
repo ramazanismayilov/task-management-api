@@ -1,17 +1,17 @@
-import { ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ClsService } from "nestjs-cls";
-import { RoleEntity } from "../../../modules/roles/entities/role.entity";
 import { Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
-import { Role } from "../../../common/enums/role.enum";
-import { generateOtpExpireDate, generateOtpNumber } from "../../../common/utils/otp.utils";
-import { UserRepository } from "../../../modules/users/repositories/users.repository";
 import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
-import { RegisterDto } from "../dto/register.dto";
-import { LoginDto } from "../dto/login.dto";
 import { v4 } from 'uuid'
+import { MailerService } from "@nestjs-modules/mailer";
+import * as Auth from "../"
+import * as User from "../../users"
+import * as Role from "../../roles"
+import * as Enum from "../../../common/enums"
+import * as Utils from "../../../common/utils"
 
 
 @Injectable()
@@ -19,13 +19,14 @@ export class AuthService {
     constructor(
         private jwt: JwtService,
         private cls: ClsService,
-        private userRepository: UserRepository,
-        @InjectRepository(RoleEntity)
-        private roleRepo: Repository<RoleEntity>,
+        private mailer: MailerService,
+        private userRepository: User.UserRepository,
+        @InjectRepository(Role.RoleEntity)
+        private roleRepo: Repository<Role.RoleEntity>,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) { }
 
-    async login(params: LoginDto) {
+    async login(params: Auth.LoginDto) {
         this.logger.log(`Login attempt for email: ${params.email}`);
         const user = await this.userRepository.findUserByEmail(params.email)
         if (!user) {
@@ -46,7 +47,7 @@ export class AuthService {
 
         let accessToken = this.jwt.sign({ userId: user.id }, { expiresIn: '15m' });
         const refreshToken = v4()
-        const hashedRefresh = await bcrypt.hash(refreshToken, 10); 
+        const hashedRefresh = await bcrypt.hash(refreshToken, 10);
         const refreshTokenDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
         user.refreshToken = hashedRefresh;
@@ -67,7 +68,7 @@ export class AuthService {
         }
     }
 
-    async register(params: RegisterDto) {
+    async register(params: Auth.RegisterDto) {
         this.logger.log(`Register attempt for email: ${params.email}`);
 
         const existingUser = await this.userRepository.findUserByEmail(params.email);
@@ -78,10 +79,10 @@ export class AuthService {
 
         const hashedPassword = await bcrypt.hash(params.password, 10);
 
-        const userRole = await this.roleRepo.findOne({ where: { name: Role.USER } });
+        const userRole = await this.roleRepo.findOne({ where: { name: Enum.Role.USER } });
         if (!userRole) {
-            this.logger.error(`Role not found: ${Role.USER}`);
-            throw new ConflictException(`Role not found: ${Role.USER}`);
+            this.logger.error(`Role not found: ${Enum.Role.USER}`);
+            throw new ConflictException(`Role not found: ${Enum.Role.USER}`);
         }
 
         const user = this.userRepository.createUser({
@@ -89,14 +90,26 @@ export class AuthService {
             password: hashedPassword,
             role: userRole,
             isActive: false,
-            otpCode: generateOtpNumber(),
-            otpExpiredAt: generateOtpExpireDate(),
+            otpCode: Utils.generateOtpNumber(),
+            otpExpiredAt: Utils.generateOtpExpireDate(),
             profile: { fullName: params.fullName } as any,
         });
 
         await this.userRepository.saveUser(user);
 
         this.logger.log(`User created successfully (email: ${params.email}, id: ${user.id})`);
+
+        if (params.email) {
+            await this.mailer.sendMail({
+                to: params.email,
+                subject: 'Verify Your Email – TaskMaster!',
+                template: 'verify-email',
+                context: {
+                    fullName: user.profile.fullName,
+                    otpCode: user.otpCode,
+                },
+            });
+        }
 
         return {
             success: true,
@@ -107,7 +120,37 @@ export class AuthService {
 
     async firebase() { }
 
-    async verifyOtp() { }
+    async verifyOtp(params: Auth.VerifyOtpDto) {
+        const user = await this.userRepository.findUserByEmail(params.email);
+        if (!user) {
+            this.logger.warn(`VerifyOtp failed. User not found: ${params.email}`);
+            throw new NotFoundException('User not found');
+        }
+
+        if (user.isActive) {
+            this.logger.warn(`VerifyOtp failed. Account is already active: ${params.email}`);
+            throw new BadRequestException('Account is already active');
+        }
+
+        if (!user.otpCode || !user.otpExpiredAt || user.otpCode !== params.otpCode || new Date().getTime() > user.otpExpiredAt.getTime()) {
+            this.logger.warn(`VerifyOtp failed. OTP is incorrect or expired: ${params.email}`);
+            throw new BadRequestException('OTP is incorrect or expired.');
+        }
+
+        const result = await this.userRepository.updateUserOtpVerified(user.id, params.otpCode, new Date());
+
+        if (result.affected === 0) {
+            this.logger.warn(`VerifyOtp failed. OTP already used or expired: ${params.email}`);
+            throw new BadRequestException('OTP is incorrect or expired.');
+        }
+
+        this.logger.log(`VerifyOtp successful for email: ${params.email}`);
+        return {
+            status: true,
+            statusCode: 200,
+            message: 'Account successfully activated',
+        };
+    }
 
     async refreshToken() { }
 
@@ -118,6 +161,6 @@ export class AuthService {
     async createForgetPasswordRequest() { }
 
     async confirmForgetPassword() { }
-    
+
     async verifyToken() { }
 }

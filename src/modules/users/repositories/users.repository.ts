@@ -1,24 +1,31 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UserEntity } from "../entities/user.entity";
-import { Repository } from "typeorm";
+import { MoreThan, Repository } from "typeorm";
+import * as User from "../../users"
 
 @Injectable()
 export class UserRepository {
     constructor(
-        @InjectRepository(UserEntity)
-        private readonly repo: Repository<UserEntity>,
+        @InjectRepository(User.UserEntity)
+        private readonly repo: Repository<User.UserEntity>,
     ) { }
 
     async findUserByEmail(email: string) {
         return this.repo.findOne({ where: { email } });
     }
 
-    createUser(user: Partial<UserEntity>) {
+    createUser(user: Partial<User.UserEntity>) {
         return this.repo.create(user);
     }
 
-    async saveUser(user: UserEntity) {
+    async saveUser(user: User.UserEntity) {
         return this.repo.save(user);
+    }
+
+    async updateUserOtpVerified(userId: number, otpCode: number, now: Date) {
+        return this.repo.update(
+            { id: userId, otpCode, otpExpiredAt: MoreThan(now) },
+            { isActive: true, otpCode: null, otpExpiredAt: null }
+        );
     }
 }

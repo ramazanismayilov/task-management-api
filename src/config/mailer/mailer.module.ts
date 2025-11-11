@@ -21,9 +21,9 @@ import { join } from 'path';
               pass: config.get('SMTP_PASSWORD'),
             },
           },
-          defaults: { from: `"166 Cargo" <${config.get('SMTP_FROM')}>` },
+          defaults: { from: `"TaskMaster" <${config.get('SMTP_FROM')}>` },
           template: {
-            dir: join(__dirname, '..', 'src', 'templates'),
+            dir: join(__dirname, '../../../src/templates'),
             adapter: new HandlebarsAdapter(),
             options: { strict: true },
           },

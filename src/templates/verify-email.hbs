@@ -1,0 +1,159 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <title>Verify Your Email - TaskMaster</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      table {
+        border-spacing: 0;
+      }
+      .email-wrapper {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px 0;
+        height: 100vh;
+      }
+      .email-container {
+        max-width: 450px;
+        width: 100%;
+        background: #ffffff;
+        border-radius: 15px;
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px;
+        text-align: center;
+      }
+      .header h1 {
+        color: #ffffff;
+        font-size: 26px;
+        margin: 0;
+      }
+      .content {
+        padding: 25px 20px;
+        text-align: center;
+      }
+      .greeting {
+        font-size: 18px;
+        color: #2d3748;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+      .greeting strong {
+        color: #667eea;
+      }
+      .message {
+        font-size: 14px;
+        color: #4a5568;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+      .otp-section {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 2px dashed #cbd5e0;
+      }
+      .otp-label {
+        font-size: 12px;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+      .otp-code {
+        font-size: 36px;
+        font-weight: 700;
+        color: #667eea;
+        letter-spacing: 8px;
+        margin: 5px 0;
+        font-family: 'Courier New', monospace;
+      }
+      .expiry-notice {
+        background: #fff5f5;
+        color: #c53030;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 10px;
+        border: 1px solid #feb2b2;
+        display: inline-block;
+      }
+      .security-note {
+        background: #f7fafc;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: left;
+        margin: 20px 0;
+      }
+      .security-note p {
+        font-size: 13px;
+        color: #4a5568;
+        line-height: 1.5;
+        margin: 0;
+      }
+      .security-note strong {
+        color: #2d3748;
+      }
+      .footer {
+        padding: 15px 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #718096;
+      }
+    </style>
+  </head>
+  <body>
+    <table class='email-wrapper' width='100%'>
+      <tr>
+        <td align='center'>
+          <table class='email-container'>
+            <tr>
+              <td class='header'>
+                <h1>TaskMaster</h1>
+              </td>
+            </tr>
+            <tr>
+              <td class='content'>
+                <p class='greeting'>Hello, <strong>{{fullName}}</strong>! 👋</p>
+                <p class='message'>Use the verification code below to activate
+                  your TaskMaster account.</p>
+                <div class='otp-section'>
+                  <div class='otp-label'>Verification Code</div>
+                  <div class='otp-code'>{{otpCode}}</div>
+                  <div class='expiry-notice'>Valid for 10 minutes</div>
+                </div>
+                <div class='security-note'>
+                  <p><strong>Security note:</strong>
+                    Do not share this code with anyone. The TaskMaster team will
+                    never ask you for this code.</p>
+                </div>
+                <p
+                  class='message'
+                  style='font-size:13px; color:#718096; margin-top:10px;'
+                >
+                  If you did not create this account, please disregard this
+                  email.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td class='footer'>
+                © 2024 TaskMaster. All rights reserved.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

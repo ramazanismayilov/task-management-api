@@ -3,8 +3,8 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 export const setupSwagger = (app: INestApplication) => {
     const config = new DocumentBuilder()
-        .setTitle('Task Management')
-        .setDescription('The Task Management API description')
+        .setTitle('TaskMaster')
+        .setDescription('The TaskMaster API description')
         .setVersion('1.0')
         .addBearerAuth()
         .build();
