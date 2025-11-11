@@ -14,6 +14,7 @@ import { AttachmentEntity } from '../../modules/attachments/entity/attachment.en
 import { NotificationEntity } from '../../modules/notifications/entities/notification.entity';
 import { WorkspaceTypeEntity } from '../../modules/workspaces/entities/workspace-type.entity';
 import { OrganizationEntity } from '../../modules/organizations/entities/organization.entity';
+import { ProjectMemberEntity } from '../../modules/projects/entities/project_member.entity';
 
 export const databaseConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
     if (configService.get('NODE_ENV') === 'production') {
@@ -27,7 +28,7 @@ export const databaseConfig = async (configService: ConfigService): Promise<Type
             entities: [
                 UserEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
                 NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
-                ProjectEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
+                ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
             ],
             migrations: [join(__dirname, '../migrations/*.{ts,js}')],
             synchronize: false,
@@ -45,7 +46,7 @@ export const databaseConfig = async (configService: ConfigService): Promise<Type
         entities: [
             UserEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
             NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
-            ProjectEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
+            ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
         ],
         migrations: [join(__dirname, '../migrations/*.{ts,js}')],
         synchronize: true,

@@ -106,11 +106,18 @@ export class AuthService {
     }
 
     async firebase() { }
+
     async verifyOtp() { }
+
     async refreshToken() { }
+
     async resendOtp() { }
+
     async resetPassword() { }
+
     async createForgetPasswordRequest() { }
+
     async confirmForgetPassword() { }
+    
     async verifyToken() { }
 }

@@ -48,6 +48,9 @@ export class TaskEntity {
     @OneToMany(() => CommentEntity, (comment) => comment.task, { cascade: true })
     comments: CommentEntity[];
 
+    @Column({ type: 'boolean', default: false })
+    isArchived: boolean;
+
     @CreateDateColumn()
     createdAt: Date;
 

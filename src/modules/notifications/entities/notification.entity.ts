@@ -16,6 +16,12 @@ export class NotificationEntity {
     @Column({ default: false })
     isRead: boolean;
 
+    @Column({ type: 'timestamp', nullable: true })
+    readAt: Date | null;
+
+    @Column({ nullable: true })
+    link: string;
+
     @ManyToOne(() => UserEntity, (user) => user.notifications, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user: UserEntity;

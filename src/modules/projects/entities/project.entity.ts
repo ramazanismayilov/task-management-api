@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { WorkspaceEntity } from "../../../modules/workspaces/entities/workspace.entity";
 import { BoardEntity } from "../../../modules/boards/entities/board.entity";
+import { ProjectMemberEntity } from "./project_member.entity";
 
 @Entity('projects')
 export class ProjectEntity {
@@ -19,6 +20,9 @@ export class ProjectEntity {
 
     @OneToMany(() => BoardEntity, (board) => board.project)
     boards: BoardEntity[];
+
+    @OneToMany(() => ProjectMemberEntity, member => member.project, { cascade: true })
+    members: ProjectMemberEntity[];
 
     @CreateDateColumn()
     createdAt: Date;

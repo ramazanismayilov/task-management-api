@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { TaskEntity } from "../../../modules/tasks/entities/task.entity";
 import { UserEntity } from "../../../modules/users/entities/user.entity";
 
@@ -20,6 +20,13 @@ export class CommentEntity {
     @ManyToOne(() => UserEntity, (user) => user.comments, { onDelete: "SET NULL" })
     @JoinColumn({ name: "userId" })
     user: UserEntity;
+
+    @ManyToOne(() => CommentEntity, (comment) => comment.replies, { nullable: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'parentCommentId' })
+    parentComment: CommentEntity | null;
+
+    @OneToMany(() => CommentEntity, (comment) => comment.parentComment)
+    replies: CommentEntity[];
 
     @CreateDateColumn()
     createdAt: Date;

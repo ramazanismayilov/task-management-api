@@ -20,6 +20,9 @@ export class BoardEntity {
     @OneToMany(() => BoardColumnEntity, (column) => column.board, { cascade: true })
     columns: BoardColumnEntity[];
 
+    @Column({ default: true })
+    isActive: boolean;
+
     @CreateDateColumn()
     createdAt: Date;
 

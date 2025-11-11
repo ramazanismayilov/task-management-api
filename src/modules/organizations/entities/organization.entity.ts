@@ -17,6 +17,12 @@ export class OrganizationEntity {
     @OneToMany(() => WorkspaceEntity, (workspace) => workspace.organization)
     workspaces: WorkspaceEntity[];
 
+    @Column({ default: true })
+    isActive: boolean;
+
+    @Column({ nullable: true })
+    domain: string;
+
     @CreateDateColumn({ select: false })
     createdAt: Date;
 

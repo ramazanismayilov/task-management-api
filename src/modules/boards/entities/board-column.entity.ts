@@ -1,8 +1,9 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { BoardEntity } from "./board.entity";
 import { TaskEntity } from "../../../modules/tasks/entities/task.entity";
 
 @Entity('board_columns')
+@Unique(['board', 'position'])
 export class BoardColumnEntity {
     @PrimaryGeneratedColumn()
     id: number;
