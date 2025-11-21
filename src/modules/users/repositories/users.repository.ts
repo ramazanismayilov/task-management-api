@@ -14,6 +14,21 @@ export class UserRepository {
         return this.repo.findOne({ where: { email } });
     }
 
+    async findUserById(id: number) {
+        return this.repo.findOne({
+            where: { id },
+            relations: ['role'],
+            select: {
+                id: true,
+                email: true,
+                role: {
+                    id: true,
+                    name: true
+                }
+            }
+        });
+    }
+
     async findUserByRefreshToken(refreshToken: string) {
         return this.repo.findOne({ where: { refreshToken } });
     }

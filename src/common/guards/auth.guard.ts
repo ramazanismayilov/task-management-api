@@ -16,15 +16,18 @@ export class AuthGuard implements CanActivate {
 
         try {
             let payload = this.jwt.verify(token);
+            console.log(payload);
+
             if (!payload.userId) throw new UnauthorizedException('Invalid token payload');
 
-            let user = await this.userService.getUser(payload.userId);
+            const user = await this.userService.getUserEntity(payload.userId);
             if (!user) throw new UnauthorizedException('User not found');
 
             req.user = user;
             this.cls.set('user', user);
             return true
         } catch (error) {
+            console.log(error);
             throw new UnauthorizedException();
         }
     }

@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from "@nestjs/common";
+import { Auth as AuthDecorator } from "src/common/decorators/auth.decorator";
 import * as Auth from "../"
 
 @Controller('auth')
@@ -30,6 +31,7 @@ export class AuthController {
         return this.authService.refreshToken(body)
     }
 
+    @AuthDecorator()
     @Post('resetPassword')
     resetPassword(@Body() body: Auth.ResetPasswordDto) {
         return this.authService.resetPassword(body)
