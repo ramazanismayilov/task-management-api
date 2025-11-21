@@ -16,7 +16,7 @@ import { UsersModule } from './modules/users/users.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development',
+      envFilePath: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev',
     }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'public') }),
     DatabaseModule,
