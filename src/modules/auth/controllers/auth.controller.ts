@@ -19,4 +19,19 @@ export class AuthController {
     verifyOtp(@Body() body: Auth.VerifyOtpDto) {
         return this.authService.verifyOtp(body)
     }
+
+    @Post('resendOtp')
+    resendOtp(@Body() body: Auth.ResendOtpDto) {
+        return this.authService.resendOtp(body)
+    }
+
+    @Post('refreshToken')
+    refreshToken(@Body() body: Auth.RefreshTokenDto) {
+        return this.authService.refreshToken(body)
+    }
+
+    @Post('resetPassword')
+    resetPassword(@Body() body: Auth.ResetPasswordDto) {
+        return this.authService.resetPassword(body)
+    }
 }

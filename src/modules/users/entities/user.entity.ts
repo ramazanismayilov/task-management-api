@@ -19,7 +19,7 @@ export class UserEntity {
     @ManyToOne(() => RoleEntity, (role) => role.users, { onDelete: 'SET NULL', eager: true })
     role: RoleEntity;
 
-    @OneToOne(() => ProfileEntity, (profile) => profile.user, { cascade: true })
+    @OneToOne(() => ProfileEntity, (profile) => profile.user, { cascade: true, eager: true })
     profile: ProfileEntity;
 
     @Column({ default: false })

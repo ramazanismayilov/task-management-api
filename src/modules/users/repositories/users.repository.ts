@@ -14,6 +14,10 @@ export class UserRepository {
         return this.repo.findOne({ where: { email } });
     }
 
+    async findUserByRefreshToken(refreshToken: string) {
+        return this.repo.findOne({ where: { refreshToken } });
+    }
+
     createUser(user: Partial<User.UserEntity>) {
         return this.repo.create(user);
     }

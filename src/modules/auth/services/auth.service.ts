@@ -1,12 +1,12 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { MailerService } from "@nestjs-modules/mailer";
 import { InjectRepository } from "@nestjs/typeorm";
+import { JwtService } from "@nestjs/jwt";
 import { ClsService } from "nestjs-cls";
 import { Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
-import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import { v4 } from 'uuid'
-import { MailerService } from "@nestjs-modules/mailer";
 import * as Auth from "../"
 import * as User from "../../users"
 import * as Role from "../../roles"
@@ -121,6 +121,8 @@ export class AuthService {
     async firebase() { }
 
     async verifyOtp(params: Auth.VerifyOtpDto) {
+        this.logger.log(`VerifyOtp attempt for email: ${params.email}`);
+
         const user = await this.userRepository.findUserByEmail(params.email);
         if (!user) {
             this.logger.warn(`VerifyOtp failed. User not found: ${params.email}`);
@@ -152,11 +154,116 @@ export class AuthService {
         };
     }
 
-    async refreshToken() { }
+    async resendOtp(params: Auth.ResendOtpDto) {
+        this.logger.log(`Resend OTP attempt for email: ${params.email}`);
 
-    async resendOtp() { }
+        const user = await this.userRepository.findUserByEmail(params.email);
 
-    async resetPassword() { }
+        if (!user) {
+            this.logger.warn(`ResendOtp failed. User not found: ${params.email}`);
+            throw new NotFoundException('User not found');
+        }
+
+        if (user.isActive) {
+            this.logger.warn(`ResendOtp failed. Account is already active: ${params.email}`);
+            throw new BadRequestException('Account is already active');
+        }
+
+        user.otpCode = Utils.generateOtpNumber();
+        user.otpExpiredAt = Utils.generateOtpExpireDate();
+
+        this.logger.debug(`New OTP generated for ${params.email}: ${user.otpCode}`);
+
+        await this.userRepository.saveUser(user);
+        this.logger.log(`Updated OTP saved to DB for ${params.email}`);
+
+
+        if (params.email) {
+            await this.mailer.sendMail({
+                to: params.email,
+                subject: 'Verify Your Email – TaskMaster!',
+                template: 'verify-email',
+                context: {
+                    fullName: user.profile.fullName,
+                    otpCode: user.otpCode,
+                },
+            });
+        }
+
+        this.logger.log(`OTP email sent to ${params.email}`);
+
+        return {
+            success: true,
+            statusCode: 201,
+            message: 'OTP sent to your email',
+        };
+    }
+
+    async refreshToken(params: Auth.RefreshTokenDto) {
+        this.logger.log(`Refresh token request received`);
+
+        const user = await this.userRepository.findUserByRefreshToken(params.refreshToken)
+        if (!user) {
+            this.logger.warn(`Refresh token failed. User not found for token: ${params.refreshToken}`)
+            throw new NotFoundException('Refresh token is invalid');
+        }
+
+        this.logger.debug(`User found for refresh token: ${user.email}`);
+
+        const accessToken = this.jwt.sign({ userId: user.id }, { expiresIn: '15m' })
+
+        this.logger.log(`New access token generated for user: ${user.email}`)
+
+        return {
+            success: true,
+            statusCode: 200,
+            message: 'successfully',
+            data: {
+                accessToken
+            }
+        }
+    }
+
+    async resetPassword(params: Auth.ResetPasswordDto) {
+        this.logger.log(`Password reset attempt for user`);
+
+        const user = this.cls.get<User.UserEntity>('user');
+
+        if (!user) {
+            this.logger.error(`resetPassword failed: No user found in CLS context`);
+            throw new UnauthorizedException('Unauthorized');
+        }
+
+        this.logger.debug(`User found for resetPassword: ${user.email}`);
+
+        const checkPassword = await bcrypt.compare(params.currentPassword, user.password);
+
+        if (!checkPassword) {
+            this.logger.warn(`resetPassword failed: Current password is incorrect for user ${user.email}`);
+            throw new BadRequestException('Current password is wrong');
+        }
+
+        this.logger.debug(`Current password validated for user ${user.email}`);
+
+        Utils.validatePasswords(params.newPassword, params.repeatPassword);
+
+        this.logger.debug(`New passwords validated successfully for ${user.email}`);
+
+        const hashedPassword = await bcrypt.hash(params.newPassword, 10);
+        user.password = hashedPassword;
+
+        this.logger.log(`New password hashed for user ${user.email}`);
+
+        await this.userRepository.saveUser(user);
+
+        this.logger.log(`Password updated successfully for user ${user.email}`);
+
+        return {
+            success: true,
+            statusCode: 200,
+            message: 'Password is updated successfully',
+        };
+    }
 
     async createForgetPasswordRequest() { }
 
