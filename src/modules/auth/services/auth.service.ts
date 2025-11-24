@@ -4,7 +4,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ClsService } from "nestjs-cls";
-import { Repository } from "typeorm";
+import { MoreThan, Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid'
 import * as Auth from "../"
@@ -12,6 +12,7 @@ import * as User from "../../users"
 import * as Role from "../../roles"
 import * as Enum from "../../../common/enums"
 import * as Utils from "../../../common/utils"
+import { addMinutes } from "date-fns";
 
 
 @Injectable()
@@ -263,7 +264,68 @@ export class AuthService {
         };
     }
 
-    async createForgetPasswordRequest(params: Auth.CreateForgetPasswordDto) { }
+    async createForgetPasswordRequest(params: Auth.CreateForgetPasswordDto) {
+        this.logger.log(`Forget password request received for email: ${params.email}`);
+
+        const user = await this.userRepository.findUserByEmail(params.email);
+        if (!user) {
+            this.logger.warn(`Forget password failed. User not found: ${params.email}`);
+            throw new NotFoundException('User not found');
+        }
+
+        this.logger.debug(`User found: id=${user.id}, email=${user.email}`);
+
+        let activation = await this.userRepository.findActiveActivation(user.id);
+
+        if (activation) {
+            this.logger.debug(`Active forget-password token already exists for userId=${user.id}, token=${activation.token}`)
+        }
+
+        if (!activation) {
+            const newToken = v4();
+            const expireDate = addMinutes(new Date(), 30);
+
+            this.logger.debug(
+                `No active token found. Creating new forget-password token: userId=${user.id}, token=${newToken}, expiresAt=${expireDate}`
+            );
+
+            activation = this.userRepository.createActivation({
+                userId: user.id,
+                token: newToken,
+                expiredAt: expireDate,
+            });
+        }
+
+        const resetLink = `${params.callbackURL}?token=${activation.token}`;
+
+        this.logger.debug(`Generated reset link for userId=${user.id}: ${resetLink}`);
+
+        try {
+            await this.mailer.sendMail({
+                to: user.email,
+                subject: 'Forgot Password Request - Epic Games!',
+                template: 'forget-password',
+                context: {
+                    fullName: user.profile.fullName,
+                    resetLink,
+                },
+            });
+
+            this.logger.log(`Forgot-password email sent successfully to: ${user.email}`);
+
+            await this.userRepository.saveActivation(activation);
+
+            this.logger.debug(
+                `Activation token saved: userId=${user.id}, token=${activation.token}, expiredAt=${activation.expiredAt}`
+            );
+
+            return { message: 'Mail has been successfully sent' };
+
+        } catch (error) {
+            this.logger.error(`Failed to send forgot-password email to ${user.email}. Error: ${error.message}`)
+            throw new InternalServerErrorException('Due to some reasons, we cannot send mail for forgot-password')
+        }
+    }
 
     async confirmForgetPassword(params: Auth.ConfirmForgetPaswordDto) { }
 
@@ -284,7 +346,7 @@ export class AuthService {
         } catch (e: any) {
             this.logger.error(`Token verification failed. Error: ${e.name} - ${e.message}`);
 
-            if (e.name === 'JsonWebTokenError')  throw new BadRequestException("Invalid or expired token")
+            if (e.name === 'JsonWebTokenError') throw new BadRequestException("Invalid or expired token")
             if (e.name === 'TokenExpiredError') throw new BadRequestException("Token has expired");
 
             throw new InternalServerErrorException(`Verification failed: ${e}`);
