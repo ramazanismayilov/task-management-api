@@ -28,7 +28,7 @@ export class UserService {
         return {
             success: true,
             statusCode: 200,
-            message: 'successfully',
+            message: 'success',
             data: {
                 user
             }

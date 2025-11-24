@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import { MailerService } from "@nestjs-modules/mailer";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -47,10 +47,9 @@ export class AuthService {
 
         let accessToken = this.jwt.sign({ userId: user.id }, { expiresIn: '15m' });
         const refreshToken = v4()
-        const hashedRefresh = await bcrypt.hash(refreshToken, 10);
         const refreshTokenDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-        user.refreshToken = hashedRefresh;
+        user.refreshToken = refreshToken;
         user.refreshTokenDate = refreshTokenDate;
 
         await this.userRepository.saveUser(user);
@@ -63,7 +62,7 @@ export class AuthService {
             message: 'Login is successfully',
             data: {
                 accessToken,
-                refreshToken: hashedRefresh
+                refreshToken: refreshToken
             }
         }
     }
@@ -217,7 +216,7 @@ export class AuthService {
         return {
             success: true,
             statusCode: 200,
-            message: 'successfully',
+            message: 'success',
             data: {
                 accessToken
             }
@@ -228,7 +227,6 @@ export class AuthService {
         this.logger.log(`Password reset attempt for user`);
 
         const user = this.cls.get<User.UserEntity>('user');
-
         if (!user) {
             this.logger.error(`resetPassword failed: No user found in CLS context`);
             throw new UnauthorizedException('Unauthorized');
@@ -265,9 +263,31 @@ export class AuthService {
         };
     }
 
-    async createForgetPasswordRequest() { }
+    async createForgetPasswordRequest(params: Auth.CreateForgetPasswordDto) { }
 
-    async confirmForgetPassword() { }
+    async confirmForgetPassword(params: Auth.ConfirmForgetPaswordDto) { }
 
-    async verifyToken() { }
+    verifyToken(token: string) {
+        this.logger.log(`Received verify token request. Token: ${token}`);
+
+        try {
+            const payload = this.jwt.verify(token);
+            this.logger.log(`Token verified successfully. Payload: ${JSON.stringify(payload)}`);
+
+            return {
+                success: true,
+                statusCode: 200,
+                message: "Success",
+                userId: payload.userId
+            };
+
+        } catch (e: any) {
+            this.logger.error(`Token verification failed. Error: ${e.name} - ${e.message}`);
+
+            if (e.name === 'JsonWebTokenError')  throw new BadRequestException("Invalid or expired token")
+            if (e.name === 'TokenExpiredError') throw new BadRequestException("Token has expired");
+
+            throw new InternalServerErrorException(`Verification failed: ${e}`);
+        }
+    }
 }

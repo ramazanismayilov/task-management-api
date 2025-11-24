@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { Auth as AuthDecorator } from "src/common/decorators/auth.decorator";
 import * as Auth from "../"
 
@@ -35,5 +35,20 @@ export class AuthController {
     @Post('resetPassword')
     resetPassword(@Body() body: Auth.ResetPasswordDto) {
         return this.authService.resetPassword(body)
+    }
+
+    @Post('forget-password')
+    createForgetPasswordRequest(@Body() body: Auth.CreateForgetPasswordDto) {
+        return this.authService.createForgetPasswordRequest(body)
+    }
+
+    @Post('forget-password/confirm')
+    confirmPassword(@Body() body: Auth.ConfirmForgetPaswordDto) {
+        return this.authService.confirmForgetPassword(body)
+    }
+
+    @Get('verify-token/:token')
+    verify(@Param('token') token: string) {
+        return this.authService.verifyToken(token)
     }
 }

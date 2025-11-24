@@ -11,26 +11,15 @@ export class UserRepository {
     ) { }
 
     async findUserByEmail(email: string) {
-        return this.repo.findOne({ where: { email } });
+        return this.repo.findOne({ where: { email } })
     }
 
     async findUserById(id: number) {
-        return this.repo.findOne({
-            where: { id },
-            relations: ['role'],
-            select: {
-                id: true,
-                email: true,
-                role: {
-                    id: true,
-                    name: true
-                }
-            }
-        });
+        return this.repo.findOne({ where: { id }, relations: ['role'] })
     }
 
     async findUserByRefreshToken(refreshToken: string) {
-        return this.repo.findOne({ where: { refreshToken } });
+        return this.repo.findOne({ where: { refreshToken } })
     }
 
     createUser(user: Partial<User.UserEntity>) {

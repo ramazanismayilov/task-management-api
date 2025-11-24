@@ -2,14 +2,13 @@ import { IsString, Length } from "class-validator";
 
 export class ResetPasswordDto {
     @IsString()
-    @Length(6, 12)
     currentPassword: string;
 
     @IsString()
-    @Length(6, 12)
+    @Length(6, 12, { message: 'Password must be between 6 and 32 characters' })
     newPassword: string;
 
     @IsString()
-    @Length(6, 12)
+    @Length(6, 12, { message: 'Password must be between 6 and 32 characters' })
     repeatPassword: string;
 }

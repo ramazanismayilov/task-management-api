@@ -4,5 +4,7 @@ export * from './dto/verify.dto';
 export * from './dto/refreshToken.dto';
 export * from './dto/resendOtp.dto';
 export * from './dto/resetPassword.dto';
+export * from './dto/createForgetPassword.dto';
+export * from './dto/confirmForgetPassword.dto';
 export * from './services/auth.service';
 export * from './auth.module';
