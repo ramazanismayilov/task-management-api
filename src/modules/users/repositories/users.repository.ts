@@ -7,8 +7,8 @@ import * as User from "../../users"
 export class UserRepository {
     constructor(
         @InjectRepository(User.UserEntity)
-        @InjectRepository(User.UserActivationEntity)
         private readonly userRepo: Repository<User.UserEntity>,
+        @InjectRepository(User.UserActivationEntity)
         private readonly userActivationRepo: Repository<User.UserActivationEntity>,
     ) { }
 
@@ -40,13 +40,7 @@ export class UserRepository {
     }
 
     async findActiveActivation(userId: number) {
-        const now = new Date();
-        return this.userActivationRepo.findOne({
-            where: {
-                userId,
-                expiredAt: MoreThan(now),
-            },
-        });
+        return this.userActivationRepo.findOne({ where: { userId, expiredAt: MoreThan(new Date()) } })
     }
 
     createActivation(data: Partial<User.UserActivationEntity>) {
@@ -58,11 +52,18 @@ export class UserRepository {
     }
 
     async findUserActivation(userId: number, expiredAt: Date) {
-        return this.userActivationRepo.findOne({
-            where: {
-                userId,
-                expiredAt,
-            },
-        });
+        return this.userActivationRepo.findOne({ where: { userId, expiredAt } });
+    }
+
+    async findValidToken(token: string) {
+        return this.userActivationRepo.findOne({ where: { token, expiredAt: MoreThan(new Date()) } });
+    }
+
+    async deleteActivationByUserId(userId: number) {
+        return this.userActivationRepo.delete({ userId });
+    }
+
+    async findUserByIdWithPassword(id: number) {
+        return this.userRepo.findOne({ where: { id }, select: ['id', 'email', 'password'] });
     }
 }

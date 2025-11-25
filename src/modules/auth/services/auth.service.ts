@@ -4,7 +4,8 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ClsService } from "nestjs-cls";
-import { MoreThan, Repository } from "typeorm";
+import { addMinutes } from "date-fns";
+import { Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid'
 import * as Auth from "../"
@@ -12,7 +13,6 @@ import * as User from "../../users"
 import * as Role from "../../roles"
 import * as Enum from "../../../common/enums"
 import * as Utils from "../../../common/utils"
-import { addMinutes } from "date-fns";
 
 
 @Injectable()
@@ -268,31 +268,18 @@ export class AuthService {
         this.logger.log(`Forget password request received for email: ${params.email}`);
 
         const user = await this.userRepository.findUserByEmail(params.email);
-        if (!user) {
-            this.logger.warn(`Forget password failed. User not found: ${params.email}`);
-            throw new NotFoundException('User not found');
-        }
+        if (!user) throw new NotFoundException('User not found');
 
         this.logger.debug(`User found: id=${user.id}, email=${user.email}`);
 
         let activation = await this.userRepository.findActiveActivation(user.id);
-
-        if (activation) {
-            this.logger.debug(`Active forget-password token already exists for userId=${user.id}, token=${activation.token}`)
-        }
-
         if (!activation) {
-            const newToken = v4();
-            const expireDate = addMinutes(new Date(), 30);
-
-            this.logger.debug(
-                `No active token found. Creating new forget-password token: userId=${user.id}, token=${newToken}, expiresAt=${expireDate}`
-            );
+            this.logger.debug(`No active token found. Creating new forget-password token: userId=${user.id}, token=${v4()}, expiresAt=${addMinutes(new Date(), 30)}`);
 
             activation = this.userRepository.createActivation({
                 userId: user.id,
-                token: newToken,
-                expiredAt: expireDate,
+                token: v4(),
+                expiredAt: addMinutes(new Date(), 30),
             });
         }
 
@@ -327,7 +314,51 @@ export class AuthService {
         }
     }
 
-    async confirmForgetPassword(params: Auth.ConfirmForgetPaswordDto) { }
+    async confirmForgetPassword(params: Auth.ConfirmForgetPaswordDto) {
+        this.logger.log(`Confirm forget-password request received. Token: ${params.token}`);
+
+        // 1️⃣ Aktiv və etibarlı tokeni tapırıq
+        const activation = await this.userRepository.findValidToken(params.token);
+
+        if (!activation) {
+            this.logger.warn(`Forget-password token is invalid or expired: ${params.token}`);
+            throw new BadRequestException('Token is not valid');
+        }
+
+        this.logger.debug(
+            `Valid token found. userId=${activation.userId}, expiresAt=${activation.expiredAt}`
+        );
+
+        // 2️⃣ Şifrələrin uyğunluğunu yoxlayırıq
+        Utils.validatePasswords(params.newPassword, params.repeatPassword);
+        this.logger.debug(`Passwords validated successfully for userId=${activation.userId}`);
+
+        // 3️⃣ İstifadəçini tapırıq
+        const user = await this.userRepository.findUserByIdWithPassword(activation.userId);
+
+        if (!user) {
+            this.logger.error(
+                `User not found for forget-password confirmation. userId=${activation.userId}`
+            );
+            throw new NotFoundException('User is not found');
+        }
+
+        // 4️⃣ Yeni şifrəni hash edirik
+        const hashedPassword = await bcrypt.hash(params.newPassword, 10);
+        user.password = hashedPassword;
+
+        await this.userRepository.saveUser(user);
+        this.logger.log(`Password updated successfully for userId=${user.id}`);
+
+        // 5️⃣ Tokeni silirik (bir dəfəlik istifadədən sonra)
+        await this.userRepository.deleteActivationByUserId(user.id);
+        this.logger.debug(`Forget-password activation token deleted for userId=${user.id}`);
+
+        return {
+            success: true,
+            message: 'Password is updated successfully',
+        };
+    }
 
     verifyToken(token: string) {
         this.logger.log(`Received verify token request. Token: ${token}`);

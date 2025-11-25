@@ -15,6 +15,7 @@ import { NotificationEntity } from '../../modules/notifications/entities/notific
 import { WorkspaceTypeEntity } from '../../modules/workspaces/entities/workspace-type.entity';
 import { OrganizationEntity } from '../../modules/organizations/entities/organization.entity';
 import { ProjectMemberEntity } from '../../modules/projects/entities/project_member.entity';
+import { UserActivationEntity } from 'src/modules/users';
 
 export const databaseConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
     if (configService.get('NODE_ENV') === 'production') {
@@ -26,7 +27,7 @@ export const databaseConfig = async (configService: ConfigService): Promise<Type
             password: configService.get('MYSQL_PASSWORD'),
             database: configService.get('MYSQL_DB'),
             entities: [
-                UserEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
+                UserEntity, UserActivationEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
                 NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
                 ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
             ],
@@ -44,7 +45,7 @@ export const databaseConfig = async (configService: ConfigService): Promise<Type
         password: configService.get('SUPABASE_PASSWORD'),
         database: configService.get('SUPABASE_DB'),
         entities: [
-            UserEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
+            UserEntity, UserActivationEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
             NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
             ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
         ],
