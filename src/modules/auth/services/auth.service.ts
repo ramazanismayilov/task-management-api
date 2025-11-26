@@ -1,5 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
@@ -23,28 +22,16 @@ export class AuthService {
         private mailer: MailerService,
         private userRepository: User.UserRepository,
         @InjectRepository(Role.RoleEntity)
-        private roleRepo: Repository<Role.RoleEntity>,
-        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+        private roleRepo: Repository<Role.RoleEntity>
     ) { }
 
     async login(params: Auth.LoginDto) {
-        this.logger.log(`Login attempt for email: ${params.email}`);
         const user = await this.userRepository.findUserByEmail(params.email)
-        if (!user) {
-            this.logger.warn(`Login failed. User not found: ${params.email}`);
-            throw new NotFoundException('Email or passsword is wrong')
-        }
-
-        if (!user.isActive) {
-            this.logger.warn(`Login failed. Account not active: ${params.email}`);
-            throw new ForbiddenException('Account is not active');
-        }
+        if (!user) throw new NotFoundException('Email or passsword is wrong')
+        if (!user.isActive) throw new ForbiddenException('Account is not active');
 
         let isPasswordValid = await bcrypt.compare(params.password, user.password);
-        if (!isPasswordValid) {
-            this.logger.warn(`Login failed. Invalid password for email: ${params.email}`);
-            throw new UnauthorizedException('Email or passsword is wrong');
-        }
+        if (!isPasswordValid) throw new UnauthorizedException('Email or passsword is wrong');
 
         let accessToken = this.jwt.sign({ userId: user.id }, { expiresIn: '15m' });
         const refreshToken = v4()
@@ -54,9 +41,6 @@ export class AuthService {
         user.refreshTokenDate = refreshTokenDate;
 
         await this.userRepository.saveUser(user);
-
-        this.logger.log(`Login successful for email: ${params.email}`);
-
         return {
             success: true,
             statusCode: 200,
@@ -69,21 +53,13 @@ export class AuthService {
     }
 
     async register(params: Auth.RegisterDto) {
-        this.logger.log(`Register attempt for email: ${params.email}`);
-
         const existingUser = await this.userRepository.findUserByEmail(params.email);
-        if (existingUser) {
-            this.logger.warn(`Register failed. User already exists: ${params.email}`);
-            throw new ConflictException(`User already exists with email: ${params.email}`);
-        }
+        if (existingUser) throw new ConflictException(`User already exists with email: ${params.email}`);
 
         const hashedPassword = await bcrypt.hash(params.password, 10);
 
         const userRole = await this.roleRepo.findOne({ where: { name: Enum.Role.USER } });
-        if (!userRole) {
-            this.logger.error(`Role not found: ${Enum.Role.USER}`);
-            throw new ConflictException(`Role not found: ${Enum.Role.USER}`);
-        }
+        if (!userRole) throw new ConflictException(`Role not found: ${Enum.Role.USER}`);
 
         const user = this.userRepository.createUser({
             email: params.email,
@@ -96,8 +72,6 @@ export class AuthService {
         });
 
         await this.userRepository.saveUser(user);
-
-        this.logger.log(`User created successfully (email: ${params.email}, id: ${user.id})`);
 
         if (params.email) {
             await this.mailer.sendMail({
@@ -121,32 +95,20 @@ export class AuthService {
     async firebase() { }
 
     async verifyOtp(params: Auth.VerifyOtpDto) {
-        this.logger.log(`VerifyOtp attempt for email: ${params.email}`);
-
         const user = await this.userRepository.findUserByEmail(params.email);
-        if (!user) {
-            this.logger.warn(`VerifyOtp failed. User not found: ${params.email}`);
-            throw new NotFoundException('User not found');
-        }
+        if (!user) throw new NotFoundException('User not found');
+        if (user.isActive) throw new BadRequestException('Account is already active');
 
-        if (user.isActive) {
-            this.logger.warn(`VerifyOtp failed. Account is already active: ${params.email}`);
-            throw new BadRequestException('Account is already active');
-        }
-
-        if (!user.otpCode || !user.otpExpiredAt || user.otpCode !== params.otpCode || new Date().getTime() > user.otpExpiredAt.getTime()) {
-            this.logger.warn(`VerifyOtp failed. OTP is incorrect or expired: ${params.email}`);
-            throw new BadRequestException('OTP is incorrect or expired.');
-        }
+        if (
+            !user.otpCode ||
+            !user.otpExpiredAt ||
+            user.otpCode !== params.otpCode ||
+            new Date().getTime() > user.otpExpiredAt.getTime()
+        ) throw new BadRequestException('OTP is incorrect or expired.');
 
         const result = await this.userRepository.updateUserOtpVerified(user.id, params.otpCode, new Date());
+        if (result.affected === 0) throw new BadRequestException('OTP is incorrect or expired.');
 
-        if (result.affected === 0) {
-            this.logger.warn(`VerifyOtp failed. OTP already used or expired: ${params.email}`);
-            throw new BadRequestException('OTP is incorrect or expired.');
-        }
-
-        this.logger.log(`VerifyOtp successful for email: ${params.email}`);
         return {
             status: true,
             statusCode: 200,
@@ -155,28 +117,14 @@ export class AuthService {
     }
 
     async resendOtp(params: Auth.ResendOtpDto) {
-        this.logger.log(`Resend OTP attempt for email: ${params.email}`);
-
         const user = await this.userRepository.findUserByEmail(params.email);
-
-        if (!user) {
-            this.logger.warn(`ResendOtp failed. User not found: ${params.email}`);
-            throw new NotFoundException('User not found');
-        }
-
-        if (user.isActive) {
-            this.logger.warn(`ResendOtp failed. Account is already active: ${params.email}`);
-            throw new BadRequestException('Account is already active');
-        }
+        if (!user) throw new NotFoundException('User not found');
+        if (user.isActive) throw new BadRequestException('Account is already active');
 
         user.otpCode = Utils.generateOtpNumber();
         user.otpExpiredAt = Utils.generateOtpExpireDate();
 
-        this.logger.debug(`New OTP generated for ${params.email}: ${user.otpCode}`);
-
         await this.userRepository.saveUser(user);
-        this.logger.log(`Updated OTP saved to DB for ${params.email}`);
-
 
         if (params.email) {
             await this.mailer.sendMail({
@@ -190,8 +138,6 @@ export class AuthService {
             });
         }
 
-        this.logger.log(`OTP email sent to ${params.email}`);
-
         return {
             success: true,
             statusCode: 201,
@@ -200,19 +146,10 @@ export class AuthService {
     }
 
     async refreshToken(params: Auth.RefreshTokenDto) {
-        this.logger.log(`Refresh token request received`);
-
         const user = await this.userRepository.findUserByRefreshToken(params.refreshToken)
-        if (!user) {
-            this.logger.warn(`Refresh token failed. User not found for token: ${params.refreshToken}`)
-            throw new NotFoundException('Refresh token is invalid');
-        }
-
-        this.logger.debug(`User found for refresh token: ${user.email}`);
+        if (!user) throw new NotFoundException('Refresh token is invalid');
 
         const accessToken = this.jwt.sign({ userId: user.id }, { expiresIn: '15m' })
-
-        this.logger.log(`New access token generated for user: ${user.email}`)
 
         return {
             success: true,
@@ -225,37 +162,19 @@ export class AuthService {
     }
 
     async resetPassword(params: Auth.ResetPasswordDto) {
-        this.logger.log(`Password reset attempt for user`);
-
         const user = this.cls.get<User.UserEntity>('user');
-        if (!user) {
-            this.logger.error(`resetPassword failed: No user found in CLS context`);
-            throw new UnauthorizedException('Unauthorized');
-        }
-
-        this.logger.debug(`User found for resetPassword: ${user.email}`);
+        if (!user) throw new UnauthorizedException('Unauthorized');
 
         const checkPassword = await bcrypt.compare(params.currentPassword, user.password);
 
-        if (!checkPassword) {
-            this.logger.warn(`resetPassword failed: Current password is incorrect for user ${user.email}`);
-            throw new BadRequestException('Current password is wrong');
-        }
-
-        this.logger.debug(`Current password validated for user ${user.email}`);
+        if (!checkPassword) throw new BadRequestException('Current password is wrong');
 
         Utils.validatePasswords(params.newPassword, params.repeatPassword);
-
-        this.logger.debug(`New passwords validated successfully for ${user.email}`);
 
         const hashedPassword = await bcrypt.hash(params.newPassword, 10);
         user.password = hashedPassword;
 
-        this.logger.log(`New password hashed for user ${user.email}`);
-
         await this.userRepository.saveUser(user);
-
-        this.logger.log(`Password updated successfully for user ${user.email}`);
 
         return {
             success: true,
@@ -265,17 +184,11 @@ export class AuthService {
     }
 
     async createForgetPasswordRequest(params: Auth.CreateForgetPasswordDto) {
-        this.logger.log(`Forget password request received for email: ${params.email}`);
-
         const user = await this.userRepository.findUserByEmail(params.email);
         if (!user) throw new NotFoundException('User not found');
 
-        this.logger.debug(`User found: id=${user.id}, email=${user.email}`);
-
         let activation = await this.userRepository.findActiveActivation(user.id);
         if (!activation) {
-            this.logger.debug(`No active token found. Creating new forget-password token: userId=${user.id}, token=${v4()}, expiresAt=${addMinutes(new Date(), 30)}`);
-
             activation = this.userRepository.createActivation({
                 userId: user.id,
                 token: v4(),
@@ -284,8 +197,6 @@ export class AuthService {
         }
 
         const resetLink = `${params.callbackURL}?token=${activation.token}`;
-
-        this.logger.debug(`Generated reset link for userId=${user.id}: ${resetLink}`);
 
         try {
             await this.mailer.sendMail({
@@ -298,61 +209,29 @@ export class AuthService {
                 },
             });
 
-            this.logger.log(`Forgot-password email sent successfully to: ${user.email}`);
-
             await this.userRepository.saveActivation(activation);
-
-            this.logger.debug(
-                `Activation token saved: userId=${user.id}, token=${activation.token}, expiredAt=${activation.expiredAt}`
-            );
 
             return { message: 'Mail has been successfully sent' };
 
         } catch (error) {
-            this.logger.error(`Failed to send forgot-password email to ${user.email}. Error: ${error.message}`)
             throw new InternalServerErrorException('Due to some reasons, we cannot send mail for forgot-password')
         }
     }
 
     async confirmForgetPassword(params: Auth.ConfirmForgetPaswordDto) {
-        this.logger.log(`Confirm forget-password request received. Token: ${params.token}`);
-
-        // 1️⃣ Aktiv və etibarlı tokeni tapırıq
         const activation = await this.userRepository.findValidToken(params.token);
+        if (!activation) throw new BadRequestException('Token is not valid');
 
-        if (!activation) {
-            this.logger.warn(`Forget-password token is invalid or expired: ${params.token}`);
-            throw new BadRequestException('Token is not valid');
-        }
-
-        this.logger.debug(
-            `Valid token found. userId=${activation.userId}, expiresAt=${activation.expiredAt}`
-        );
-
-        // 2️⃣ Şifrələrin uyğunluğunu yoxlayırıq
         Utils.validatePasswords(params.newPassword, params.repeatPassword);
-        this.logger.debug(`Passwords validated successfully for userId=${activation.userId}`);
 
-        // 3️⃣ İstifadəçini tapırıq
         const user = await this.userRepository.findUserByIdWithPassword(activation.userId);
+        if (!user) throw new NotFoundException('User is not found');
 
-        if (!user) {
-            this.logger.error(
-                `User not found for forget-password confirmation. userId=${activation.userId}`
-            );
-            throw new NotFoundException('User is not found');
-        }
-
-        // 4️⃣ Yeni şifrəni hash edirik
         const hashedPassword = await bcrypt.hash(params.newPassword, 10);
         user.password = hashedPassword;
 
         await this.userRepository.saveUser(user);
-        this.logger.log(`Password updated successfully for userId=${user.id}`);
-
-        // 5️⃣ Tokeni silirik (bir dəfəlik istifadədən sonra)
         await this.userRepository.deleteActivationByUserId(user.id);
-        this.logger.debug(`Forget-password activation token deleted for userId=${user.id}`);
 
         return {
             success: true,
@@ -361,11 +240,8 @@ export class AuthService {
     }
 
     verifyToken(token: string) {
-        this.logger.log(`Received verify token request. Token: ${token}`);
-
         try {
             const payload = this.jwt.verify(token);
-            this.logger.log(`Token verified successfully. Payload: ${JSON.stringify(payload)}`);
 
             return {
                 success: true,
@@ -375,8 +251,6 @@ export class AuthService {
             };
 
         } catch (e: any) {
-            this.logger.error(`Token verification failed. Error: ${e.name} - ${e.message}`);
-
             if (e.name === 'JsonWebTokenError') throw new BadRequestException("Invalid or expired token")
             if (e.name === 'TokenExpiredError') throw new BadRequestException("Token has expired");
 

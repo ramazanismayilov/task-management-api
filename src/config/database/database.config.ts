@@ -16,6 +16,7 @@ import { WorkspaceTypeEntity } from '../../modules/workspaces/entities/workspace
 import { OrganizationEntity } from '../../modules/organizations/entities/organization.entity';
 import { ProjectMemberEntity } from '../../modules/projects/entities/project_member.entity';
 import { UserActivationEntity } from 'src/modules/users';
+import { AuditEntity } from 'src/core/audit/entities/audit.entity';
 
 export const databaseConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
     if (configService.get('NODE_ENV') === 'production') {
@@ -29,7 +30,7 @@ export const databaseConfig = async (configService: ConfigService): Promise<Type
             entities: [
                 UserEntity, UserActivationEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
                 NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
-                ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
+                ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity, AuditEntity
             ],
             migrations: [join(__dirname, '../migrations/*.{ts,js}')],
             synchronize: false,
@@ -47,7 +48,7 @@ export const databaseConfig = async (configService: ConfigService): Promise<Type
         entities: [
             UserEntity, UserActivationEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
             NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
-            ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity
+            ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity, AuditEntity
         ],
         migrations: [join(__dirname, '../migrations/*.{ts,js}')],
         synchronize: true,
