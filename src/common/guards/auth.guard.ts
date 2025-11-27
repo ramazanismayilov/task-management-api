@@ -27,7 +27,6 @@ export class AuthGuard implements CanActivate {
             this.cls.set('user', user);
             return true
         } catch (error) {
-            console.log(error);
             throw new UnauthorizedException();
         }
     }

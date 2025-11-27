@@ -8,7 +8,6 @@ import { DatabaseModule } from './config/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClsModule } from './core/cls/cls.module';
 import { MailerModule } from './config/mailer/mailer.module';
-import { HttpExceptionFilter } from './core/filters/http-exceptions.filter';
 import { UsersModule } from './modules/users/users.module';
 import { LoggerModule } from './core/logging/logger.module';
 import { AuditModule } from './core/audit/audit.module';
@@ -29,6 +28,6 @@ import { AuditModule } from './core/audit/audit.module';
     AuditModule
   ],
   controllers: [AppController],
-  providers: [AppService, HttpExceptionFilter],
+  providers: [AppService],
 })
 export class AppModule { }

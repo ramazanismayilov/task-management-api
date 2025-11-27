@@ -46,6 +46,7 @@ export class AuthService {
             statusCode: 200,
             message: 'Login is successfully',
             data: {
+                userId: user.id,
                 accessToken,
                 refreshToken: refreshToken
             }
@@ -89,6 +90,9 @@ export class AuthService {
             success: true,
             statusCode: 201,
             message: 'OTP sent to your email',
+            data: {
+                userId: user.id
+            }
         };
     }
 
@@ -113,6 +117,9 @@ export class AuthService {
             status: true,
             statusCode: 200,
             message: 'Account successfully activated',
+            data: {
+                userId: user.id
+            }
         };
     }
 
