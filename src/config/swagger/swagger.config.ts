@@ -10,7 +10,7 @@ export const setupSwagger = (app: INestApplication) => {
         .build();
 
     const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, documentFactory, {
+    SwaggerModule.setup('', app, documentFactory, {
         swaggerOptions: {
             persistAuthorization: true,
         },
