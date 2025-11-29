@@ -7,6 +7,11 @@ const swagger_config_1 = require("./config/swagger/swagger.config");
 const http_exceptions_filter_1 = require("./core/filters/http-exceptions.filter");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.enableCors({
+        origin: '*',
+        methods: '*',
+        allowedHeaders: '*',
+    });
     app.setGlobalPrefix('api');
     app.enableCors();
     app.useGlobalFilters(app.get(http_exceptions_filter_1.HttpExceptionFilter));

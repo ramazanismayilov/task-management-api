@@ -10,7 +10,7 @@ const setupSwagger = (app) => {
         .addBearerAuth()
         .build();
     const documentFactory = () => swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup('', app, documentFactory, {
+    swagger_1.SwaggerModule.setup('docs', app, documentFactory, {
         swaggerOptions: {
             persistAuthorization: true,
         },

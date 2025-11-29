@@ -10,9 +10,6 @@ async function bootstrap() {
     origin: '*',
     methods: '*',
     allowedHeaders: '*',
-    preflightContinue: false,
-    credentials: true,
-    optionsSuccessStatus: 204,
   });
 
   app.setGlobalPrefix('api')
