@@ -9,8 +9,16 @@ export const setupSwagger = (app: INestApplication) => {
         .addBearerAuth()
         .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('', app, document, {
-        swaggerOptions: { persistAuthorization: true },
-    })
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('', app, documentFactory, {
+        swaggerOptions: {
+            persistAuthorization: true,
+        },
+        customCssUrl: 'https://unpkg.com/swagger-ui-dist/swagger-ui.css',
+        customJs: [
+            'https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js',
+            'https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js',
+        ],
+        customfavIcon: 'https://unpkg.com/swagger-ui-dist/favicon-32x32.png'
+    });
 }

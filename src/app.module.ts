@@ -15,8 +15,7 @@ import { AuditModule } from './core/audit/audit.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev',
+      isGlobal: true
     }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'public') }),
     DatabaseModule,

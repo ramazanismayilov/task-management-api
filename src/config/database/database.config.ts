@@ -19,25 +19,6 @@ import { UserActivationEntity } from 'src/modules/users';
 import { AuditEntity } from 'src/core/audit/entities/audit.entity';
 
 export const databaseConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
-    if (configService.get('NODE_ENV') === 'production') {
-        return {
-            type: 'mysql',
-            host: configService.get('MYSQL_HOST'),
-            port: configService.get<number>('MYSQL_PORT'),
-            username: configService.get('MYSQL_USER'),
-            password: configService.get('MYSQL_PASSWORD'),
-            database: configService.get('MYSQL_DB'),
-            entities: [
-                UserEntity, UserActivationEntity, RoleEntity, ProfileEntity, TaskEntity, CommentEntity,
-                NotificationEntity, AttachmentEntity, BoardEntity, BoardColumnEntity,
-                ProjectEntity, ProjectMemberEntity, WorkspaceEntity, WorkspaceTypeEntity, OrganizationEntity, AuditEntity
-            ],
-            migrations: [join(__dirname, '../migrations/*.{ts,js}')],
-            synchronize: false,
-            logging: true,
-        };
-    }
-
     return {
         type: 'postgres',
         host: configService.get('SUPABASE_HOST'),
