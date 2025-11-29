@@ -6,6 +6,14 @@ import { HttpExceptionFilter } from './core/filters/http-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: '*',
+    methods: '*',
+    allowedHeaders: '*',
+    preflightContinue: false,
+    credentials: true,
+    optionsSuccessStatus: 204,
+  });
 
   app.setGlobalPrefix('api')
   app.enableCors()
